@@ -1,15 +1,22 @@
 import * as THREE from 'three';
 
 export const loadObject = (url, callback) => {
-  new THREE.ObjectLoader().load( url, callback);
+  new THREE.JSONLoader().load( url, callback);
 };
 
 export const setup = (config, objectToPassConfig, callback) => {
-  const marineObjUrl = './src/marine_anims_core.json';
+  const marineObjUrl = './src/8_3_2.json';
   config.scene = new THREE.Scene();
   config.clock = new THREE.Clock();
   config.container = document.getElementById('container');
-  config.light = new THREE.AmbientLight( 0xffffff );
+  var light = new THREE.AmbientLight( 0x404040, 2 );
+  light.position.set( 1, 1, 1 ).normalize();
+  config.scene.add( light );
+
+  var light = new THREE.DirectionalLight( 0xffefef, 1 );
+  light.position.set( -1, -1, -1 ).normalize();
+  config.scene.add( light );
+
   config.scene.add(config.light);
   config.renderer = new THREE.WebGLRenderer( { antialias: true } );
   config.renderer.setClearColor( 0x000000 );

@@ -1,35 +1,39 @@
 import * as THREE from 'three';
+
 const left = 37,
   up = 38,
   right = 39,
   down = 40;
+
 export default class Marine {
   applyConfig(config) {
     this.config = config;
   }
   handleLoad(loadedObject) {
-    loadedObject.traverse( ( child ) => {
-      if ( child instanceof THREE.SkinnedMesh ) {
-        this.mesh = child;
-      }
-    });
+  const material = new THREE.MeshLambertMaterial( {
+    color: 0x3ad63a,
+      morphTargets: true,
+      vertexColors: THREE.FaceColors,
+      shading: THREE.SmoothShading
+  } );
+
+  this.mesh = new THREE.Mesh( loadedObject, material );
     this.idleCount = 0;
 
     this.mesh.rotation.y = 90 * Math.PI / 180;
     this.config.scene.add( this.mesh );
     this.skeleton = new THREE.SkeletonHelper( this.mesh );
+    console.log(this.skeleton);
     this.skeleton.visible = false;
     this.config.scene.add( this.skeleton );
     this.mixer = new THREE.AnimationMixer( this.mesh );
-    this.idleAction = this.mixer.clipAction( 'idle' );
-    this.walkAction = this.mixer.clipAction( 'walk' );
-    this.runAction = this.mixer.clipAction( 'run' );
-    this.actions = [ this.idleAction, this.walkAction, this.runAction ];
+    this.idleAction = this.mixer.clipAction( 'animation_' );
+    this.actions = [ this.idleAction ];
     this.activateAllActions();
 
     document.addEventListener('keydown', (ev) => {
-      this.setWeight( this.idleAction, 0 );
-      this.setWeight( this.runAction, 1);
+      this.setWeight( this.idleAction, 1 );
+      // this.setWeight( this.runAction, 1);
 
       switch (ev.keyCode) {
         case right:
@@ -58,16 +62,11 @@ export default class Marine {
     document.addEventListener('keyup', (ev) => {
       this.isRunning = false;
       this.setWeight( this.idleAction, 1 );
-      this.setWeight( this.runAction, 0);
     })
   }
   activateAllActions() {
-    this.setWeight( this.idleAction, 0 );
-    this.setWeight( this.walkAction, 0 );
-    this.setWeight( this.runAction, 1);
-    this.actions.forEach( function ( action ) {
-      action.play();
-    } );
+    this.setWeight( this.idleAction, 1 );
+    this.idleAction.play();
   }
 
   setWeight( action, weight ) {
@@ -81,7 +80,6 @@ export default class Marine {
       this.idleCount = 0;
       this.mesh.translateZ(-4);
     } else {
-      console.log(this.idleCount);
       this.idleCount < 40 ? this.idleCount++ : this.idleCount;
       if (this.idleCount > 30) {
         this.mesh.rotation.y = Math.PI;
